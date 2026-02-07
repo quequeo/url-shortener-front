@@ -29,7 +29,7 @@ export default function Dashboard() {
     setError('');
     setLoading(true);
     try {
-      await api.post('/api/v1/links', { url });
+      await api.post('/api/v1/links', { original_url: url });
       setUrl('');
       fetchLinks();
     } catch (err) {
