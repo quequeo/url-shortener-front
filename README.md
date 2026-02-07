@@ -12,6 +12,13 @@ npm run dev
 
 App runs on `http://localhost:5173`
 
+## Tests
+
+```bash
+npm test           # Run tests once
+npm run test:watch # Run tests in watch mode
+```
+
 ## Features
 
 - Login / Register
@@ -25,3 +32,4 @@ App runs on `http://localhost:5173`
 - Vite
 - React Router
 - Axios
+- Vitest + React Testing Library
