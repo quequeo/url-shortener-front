@@ -44,7 +44,7 @@ export default function Dashboard() {
     try {
       await api.delete(`/api/v1/links/${id}`);
       fetchLinks();
-    } catch (err) {
+    } catch {
       alert('Failed to delete link');
     }
   };

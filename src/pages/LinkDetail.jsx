@@ -11,24 +11,23 @@ export default function LinkDetail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchLinkData();
+    const fetchData = async () => {
+      try {
+        const [linkRes, visitsRes] = await Promise.all([
+          api.get(`/api/v1/links/${id}`),
+          api.get(`/api/v1/links/${id}/visits`)
+        ]);
+        setLink(linkRes.data);
+        setVisits(visitsRes.data);
+      } catch (err) {
+        setError('Failed to load link details');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [id]);
-
-  const fetchLinkData = async () => {
-    try {
-      const [linkRes, visitsRes] = await Promise.all([
-        api.get(`/api/v1/links/${id}`),
-        api.get(`/api/v1/links/${id}/visits`)
-      ]);
-      setLink(linkRes.data);
-      setVisits(visitsRes.data);
-    } catch (err) {
-      setError('Failed to load link details');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const copyToClipboard = () => {
     const shortUrl = `http://localhost:3000/${link.short_code}`;
