@@ -9,22 +9,22 @@ export default function LinkDetail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchLinkData();
-  }, [id]);
+    const fetchLinkData = async () => {
+      try {
+        const [linkRes, visitsRes] = await Promise.all([
+          api.get(`/api/v1/links/${id}`),
+          api.get(`/api/v1/links/${id}/visits`)
+        ]);
+        setLink(linkRes.data);
+        setVisits(visitsRes.data);
+      } catch (err) {
+        console.error('Failed to fetch link data:', err);
+        navigate('/dashboard');
+      }
+    };
 
-  const fetchLinkData = async () => {
-    try {
-      const [linkRes, visitsRes] = await Promise.all([
-        api.get(`/api/v1/links/${id}`),
-        api.get(`/api/v1/links/${id}/visits`)
-      ]);
-      setLink(linkRes.data);
-      setVisits(visitsRes.data);
-    } catch (err) {
-      console.error('Failed to fetch link data:', err);
-      navigate('/dashboard');
-    }
-  };
+    fetchLinkData();
+  }, [id, navigate]);
 
   if (!link) return <div>Loading...</div>;
 
