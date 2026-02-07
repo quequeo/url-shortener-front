@@ -62,8 +62,8 @@ export default function LinkDetail() {
           <code style={{ background: 'white', padding: '5px 10px', borderRadius: '4px' }}>
             http://localhost:3000/{link.short_code}
           </code>
-          <button onClick={copyToClipboard} style={{ marginLeft: '10px' }}>
-            Copy
+          <button onClick={copyToClipboard} title="Copy short URL" aria-label="Copy short URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px', marginLeft: '10px' }}>
+            📋
           </button>
         </div>
 
