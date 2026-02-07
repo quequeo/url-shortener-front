@@ -50,7 +50,8 @@ export default function Dashboard() {
   };
 
   const copyToClipboard = (code) => {
-    const shortUrl = `${window.location.origin}/${code}`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const shortUrl = `${apiUrl}/${code}`;
     navigator.clipboard.writeText(shortUrl);
     alert('Copied to clipboard!');
   };

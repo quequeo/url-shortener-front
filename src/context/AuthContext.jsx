@@ -8,10 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
     const userData = localStorage.getItem('user');
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        setUser(parsed);
+      } catch (err) {
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
@@ -20,8 +24,7 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/users/sign_in', {
       user: { email, password }
     });
-    const { token, user: userData } = response.data;
-    localStorage.setItem('auth_token', token);
+    const userData = response.data.user;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -30,16 +33,19 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/users', {
       user: { name, email, password }
     });
-    const { token, user: userData } = response.data;
-    localStorage.setItem('auth_token', token);
+    const userData = response.data.user;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
+  const logout = async () => {
     localStorage.removeItem('user');
     setUser(null);
+    try {
+      await api.delete('/users/sign_out');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
 
   return (
