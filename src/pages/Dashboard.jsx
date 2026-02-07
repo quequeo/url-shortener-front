@@ -39,6 +39,17 @@ export default function Dashboard() {
     }
   };
 
+  const handleEdit = async (link) => {
+    const newUrl = prompt('Enter new URL:', link.original_url);
+    if (!newUrl || newUrl === link.original_url) return;
+    try {
+      await api.patch(`/api/v1/links/${link.id}`, { original_url: newUrl });
+      fetchLinks();
+    } catch {
+      alert('Failed to update link');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Delete this link?')) return;
     try {
@@ -62,12 +73,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <h2>Dashboard</h2>
-        <div>
+    <div style={{ maxWidth: '1000px', margin: '50px auto', padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h2 style={{ margin: 0 }}>Dashboard</h2>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <span style={{ marginRight: '15px' }}>Welcome, {user?.name}</span>
-          <button onClick={handleLogout}>Logout</button>
+          <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}>Logout</button>
         </div>
       </div>
 
@@ -79,9 +90,9 @@ export default function Dashboard() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             required
-            style={{ flex: 1, padding: '10px' }}
+            style={{ flex: 1, padding: '10px 14px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
           />
-          <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
+          <button type="submit" disabled={loading} style={{ padding: '10px 20px', borderRadius: '6px', border: 'none', background: '#1a1a1a', color: '#fff', cursor: 'pointer', fontWeight: 500 }}>
             {loading ? 'Creating...' : 'Shorten'}
           </button>
         </div>
@@ -102,8 +113,8 @@ export default function Dashboard() {
             <tr key={link.id} style={{ borderBottom: '1px solid #eee' }}>
               <td style={{ padding: '10px' }}>
                 <a href={link.original_url} target="_blank" rel="noopener noreferrer">
-                  {link.original_url.substring(0, 50)}
-                  {link.original_url.length > 50 && '...'}
+                  {link.original_url.substring(0, 55)}
+                  {link.original_url.length > 55 && '...'}
                 </a>
               </td>
               <td style={{ padding: '10px' }}>
@@ -111,14 +122,17 @@ export default function Dashboard() {
               </td>
               <td style={{ padding: '10px', textAlign: 'center' }}>{link.click_count}</td>
               <td style={{ padding: '10px', textAlign: 'center' }}>
-                <button onClick={() => copyToClipboard(link.short_code)} style={{ marginRight: '5px' }}>
-                  Copy
+                <button onClick={() => copyToClipboard(link.short_code)} title="Copy short URL" aria-label="Copy short URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
+                  📋
                 </button>
-                <button onClick={() => navigate(`/links/${link.id}`)}>
-                  Details
+                <button onClick={() => handleEdit(link)} title="Edit URL" aria-label="Edit URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
+                  ✏️
                 </button>
-                <button onClick={() => handleDelete(link.id)} style={{ marginLeft: '5px', color: 'red' }}>
-                  Delete
+                <button onClick={() => navigate(`/links/${link.id}`)} title="View details" aria-label="View details" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
+                  📊
+                </button>
+                <button onClick={() => handleDelete(link.id)} title="Delete link" aria-label="Delete link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
+                  🗑️
                 </button>
               </td>
             </tr>
