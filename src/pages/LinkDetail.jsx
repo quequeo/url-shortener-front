@@ -71,6 +71,17 @@ export default function LinkDetail() {
           <strong>Total Clicks:</strong> {link.click_count}
         </div>
 
+        <div style={{ marginBottom: '15px' }}>
+          <strong>Unique Visitors:</strong> {link.unique_visitors}
+          {' · '}
+          <strong>Total Visits:</strong> {link.total_visitors}
+          {link.total_visitors > 0 && link.unique_visitors < link.total_visitors && (
+            <span style={{ color: '#666', marginLeft: '8px' }}>
+              ({link.total_visitors - link.unique_visitors} returning)
+            </span>
+          )}
+        </div>
+
         <div>
           <strong>Created:</strong> {new Date(link.created_at).toLocaleString()}
         </div>
