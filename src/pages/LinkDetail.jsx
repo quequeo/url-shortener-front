@@ -87,6 +87,30 @@ export default function LinkDetail() {
         </div>
       </div>
 
+      {link.devices && link.devices.length > 0 && (
+        <>
+          <h3>Devices</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ddd' }}>
+                <th style={{ padding: '10px', textAlign: 'left' }}>Browser</th>
+                <th style={{ padding: '10px', textAlign: 'center' }}>Visits</th>
+                <th style={{ padding: '10px', textAlign: 'right' }}>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {link.devices.map(device => (
+                <tr key={device.browser} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '10px' }}>{device.browser}</td>
+                  <td style={{ padding: '10px', textAlign: 'center' }}>{device.count}</td>
+                  <td style={{ padding: '10px', textAlign: 'right' }}>{device.percentage}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
       <h3>Recent Visits ({visits.length})</h3>
 
       {visits.length === 0 ? (
