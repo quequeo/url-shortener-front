@@ -131,15 +131,15 @@ export default function LinkDetail() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Browser</th>
+                    <th>OS</th>
                     <th style={{ textAlign: 'center' }}>Visits</th>
                     <th style={{ textAlign: 'right' }}>%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {link.devices.map(device => (
-                    <tr key={device.browser}>
-                      <td>{device.browser}</td>
+                    <tr key={device.os}>
+                      <td>{device.os}</td>
                       <td style={{ textAlign: 'center' }}>{device.count}</td>
                       <td style={{ textAlign: 'right' }}>{device.percentage}%</td>
                     </tr>
