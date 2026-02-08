@@ -2,13 +2,27 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import Layout from '../components/Layout';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+import '../components/ui/Table.css';
+import '../components/ui/Table.css';
+import { Copy, Edit2, BarChart2, Trash2, ExternalLink } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Modal from '../components/ui/Modal';
+import confetti from 'canvas-confetti';
 
 export default function Dashboard() {
   const [links, setLinks] = useState([]);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, logout } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState(null);
+  const [editUrl, setEditUrl] = useState('');
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +46,12 @@ export default function Dashboard() {
       await api.post('/api/v1/links', { original_url: url });
       setUrl('');
       fetchLinks();
+      toast.success('Link created successfully!');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create link');
     } finally {
@@ -39,24 +59,41 @@ export default function Dashboard() {
     }
   };
 
-  const handleEdit = async (link) => {
-    const newUrl = prompt('Enter new URL:', link.original_url);
-    if (!newUrl || newUrl === link.original_url) return;
+  const openEditModal = (link) => {
+    setSelectedLink(link);
+    setEditUrl(link.original_url);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateLink = async () => {
+    if (!editUrl || editUrl === selectedLink.original_url) {
+      setIsEditModalOpen(false);
+      return;
+    }
+
     try {
-      await api.patch(`/api/v1/links/${link.id}`, { original_url: newUrl });
+      await api.patch(`/api/v1/links/${selectedLink.id}`, { original_url: editUrl });
       fetchLinks();
+      toast.success('Link updated successfully');
+      setIsEditModalOpen(false);
     } catch {
-      alert('Failed to update link');
+      toast.error('Failed to update link');
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this link?')) return;
+  const openDeleteModal = (link) => {
+    setSelectedLink(link);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteLink = async () => {
     try {
-      await api.delete(`/api/v1/links/${id}`);
+      await api.delete(`/api/v1/links/${selectedLink.id}`);
       fetchLinks();
+      toast.success('Link deleted successfully');
+      setIsDeleteModalOpen(false);
     } catch {
-      alert('Failed to delete link');
+      toast.error('Failed to delete link');
     }
   };
 
@@ -64,89 +101,150 @@ export default function Dashboard() {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const shortUrl = `${apiUrl}/${code}`;
     navigator.clipboard.writeText(shortUrl);
-    alert('Copied to clipboard!');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+    toast.success('Copied to clipboard!');
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h2 style={{ margin: 0 }}>Dashboard</h2>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Link to="/top" style={{ marginRight: '15px', color: '#1a1a1a' }}>Top 100</Link>
-          <Link to="/profile" style={{ marginRight: '15px', color: '#1a1a1a' }}>Profile</Link>
-          <span style={{ marginRight: '15px' }}>Welcome, {user?.name}</span>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}>Logout</button>
+    <Layout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.875rem', fontWeight: 700 }}>Dashboard</h2>
+        </div>
+
+        <Card title="New Short Link">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '1rem', alignItems: 'end' }}>
+            <div style={{ flex: 1 }}>
+              <Input
+                placeholder="https://example.com/long-url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                required
+                type="url"
+              />
+            </div>
+            <Button type="submit" isLoading={loading}>
+              Shorten URL
+            </Button>
+          </form>
+          {error && <p style={{ color: 'var(--error)', marginTop: '0.5rem', fontSize: '0.875rem' }}>{error}</p>}
+        </Card>
+
+        <div className="card">
+          <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <h3 className="card-title" style={{ margin: 0 }}>Your Links</h3>
+          </div>
+
+          <div className="table-container" style={{ borderRadius: 0, border: 'none' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '55%' }}>Original URL</th>
+                  <th style={{ width: '20%' }}>Short Code</th>
+                  <th style={{ width: '10%', textAlign: 'center' }}>Clicks</th>
+                  <th style={{ width: '15%', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {links.map(link => (
+                  <tr key={link.id}>
+                    <td>
+                      <div style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <ExternalLink size={14} style={{ flexShrink: 0 }} />
+                        <a href={link.original_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+                          {link.original_url}
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <code>{link.short_code}</code>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{link.click_count}</td>
+                    <td>
+                      <div className="table-actions">
+                        <button className="action-btn" onClick={() => copyToClipboard(link.short_code)} title="Copy Short URL">
+                          <Copy size={16} />
+                        </button>
+                        <button className="action-btn" onClick={() => openEditModal(link)} title="Edit Destination">
+                          <Edit2 size={16} />
+                        </button>
+                        <button className="action-btn" onClick={() => navigate(`/links/${link.id}`)} title="View Analytics">
+                          <BarChart2 size={16} />
+                        </button>
+                        <button className="action-btn delete" onClick={() => openDeleteModal(link)} title="Delete Link">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {links.length === 0 && (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      No links yet. Create your first short link above!
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input
-            type="url"
-            placeholder="Enter URL to shorten"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            required
-            style={{ flex: 1, padding: '10px 14px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Destination URL"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateLink}>Save Changes</Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <p style={{ margin: 0, fontSize: '0.875rem' }}>
+            Enter the new destination URL for <strong>{selectedLink?.short_code}</strong>:
+          </p>
+          <Input
+            value={editUrl}
+            onChange={(e) => setEditUrl(e.target.value)}
+            placeholder="https://example.com"
+            autoFocus
           />
-          <button type="submit" disabled={loading} style={{ padding: '10px 20px', borderRadius: '6px', border: 'none', background: '#1a1a1a', color: '#fff', cursor: 'pointer', fontWeight: 500 }}>
-            {loading ? 'Creating...' : 'Shorten'}
-          </button>
         </div>
-        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-      </form>
+      </Modal>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #ddd' }}>
-            <th style={{ padding: '10px', textAlign: 'left' }}>Original URL</th>
-            <th style={{ padding: '10px', textAlign: 'left' }}>Short Code</th>
-            <th style={{ padding: '10px', textAlign: 'center' }}>Clicks</th>
-            <th style={{ padding: '10px', textAlign: 'center' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {links.map(link => (
-            <tr key={link.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '10px' }}>
-                <a href={link.original_url} target="_blank" rel="noopener noreferrer">
-                  {link.original_url.substring(0, 55)}
-                  {link.original_url.length > 55 && '...'}
-                </a>
-              </td>
-              <td style={{ padding: '10px' }}>
-                <code>{link.short_code}</code>
-              </td>
-              <td style={{ padding: '10px', textAlign: 'center' }}>{link.click_count}</td>
-              <td style={{ padding: '10px', textAlign: 'center' }}>
-                <button onClick={() => copyToClipboard(link.short_code)} title="Copy short URL" aria-label="Copy short URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
-                  📋
-                </button>
-                <button onClick={() => handleEdit(link)} title="Edit URL" aria-label="Edit URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
-                  ✏️
-                </button>
-                <button onClick={() => navigate(`/links/${link.id}`)} title="View details" aria-label="View details" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
-                  📊
-                </button>
-                <button onClick={() => handleDelete(link.id)} title="Delete link" aria-label="Delete link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>
-                  🗑️
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {links.length === 0 && (
-        <p style={{ textAlign: 'center', marginTop: '50px', color: '#999' }}>
-          No links yet. Create your first short link above!
-        </p>
-      )}
-    </div>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Link"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="danger" onClick={handleDeleteLink}>Delete Forever</Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+            This will permanently delete the short link for:
+          </p>
+          <div style={{
+            padding: '0.75rem',
+            background: 'var(--bg-body)',
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--border)',
+            wordBreak: 'break-all',
+            fontFamily: 'monospace',
+            fontSize: '0.875rem'
+          }}>
+            {selectedLink?.original_url}
+          </div>
+          <p style={{ margin: 0, color: 'var(--error)', fontSize: '0.875rem' }}>
+            Warning: This action cannot be undone.
+          </p>
+        </div>
+      </Modal>
+    </Layout>
   );
 }

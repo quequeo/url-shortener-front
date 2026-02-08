@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Layout from '../components/Layout';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import '../components/ui/Table.css';
+import { Copy, ArrowLeft, ExternalLink, Calendar, MousePointer, Globe } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function LinkDetail() {
   const { id } = useParams();
@@ -30,120 +36,161 @@ export default function LinkDetail() {
   }, [id]);
 
   const copyToClipboard = () => {
-    const shortUrl = `http://localhost:3000/${link.short_code}`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const shortUrl = `${apiUrl}/${link.short_code}`;
     navigator.clipboard.writeText(shortUrl);
-    alert('Copied to clipboard!');
+    toast.success('Copied to clipboard!');
   };
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
-  if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: 'red' }}>{error}</div>;
+  if (loading) return (
+    <Layout>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <div className="spinner"></div> {/* Add spinner css if needed or just Text */}
+        Loading...
+      </div>
+    </Layout>
+  );
+
+  if (error) return (
+    <Layout>
+      <div style={{ textAlign: 'center', color: 'var(--error)', padding: '2rem' }}>
+        {error}
+      </div>
+    </Layout>
+  );
+
   if (!link) return null;
 
   return (
-    <div style={{ maxWidth: '900px', margin: '50px auto', padding: '20px' }}>
-      <button onClick={() => navigate('/dashboard')} style={{ marginBottom: '20px' }}>
-        ← Back to Dashboard
-      </button>
-
-      <h2>Link Details</h2>
-
-      <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-        <div style={{ marginBottom: '15px' }}>
-          <strong>Original URL:</strong>
-          <br />
-          <a href={link.original_url} target="_blank" rel="noopener noreferrer">
-            {link.original_url}
-          </a>
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <strong>Short URL:</strong>
-          <br />
-          <code style={{ background: 'white', padding: '5px 10px', borderRadius: '4px' }}>
-            http://localhost:3000/{link.short_code}
-          </code>
-          <button onClick={copyToClipboard} title="Copy short URL" aria-label="Copy short URL" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px', marginLeft: '10px' }}>
-            📋
-          </button>
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <strong>Total Clicks:</strong> {link.click_count}
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <strong>Unique Visitors:</strong> {link.unique_visitors}
-          {' · '}
-          <strong>Total Visits:</strong> {link.total_visitors}
-          {link.total_visitors > 0 && link.unique_visitors < link.total_visitors && (
-            <span style={{ color: '#666', marginLeft: '8px' }}>
-              ({link.total_visitors - link.unique_visitors} returning)
-            </span>
-          )}
-        </div>
-
+    <Layout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <div>
-          <strong>Created:</strong> {new Date(link.created_at).toLocaleString()}
+          <Button variant="ghost" onClick={() => navigate('/dashboard')} style={{ paddingLeft: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <ArrowLeft size={16} /> Back to Dashboard
+          </Button>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.875rem', fontWeight: 700 }}>Link Details</h2>
+        </div>
+
+        <Card>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 40%', minWidth: '300px' }}>
+              <h3 style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Globe size={14} /> Original URL
+              </h3>
+              <a href={link.original_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', wordBreak: 'break-all', color: 'var(--primary)', fontWeight: 500, fontSize: '1.1rem' }}>
+                {link.original_url}
+              </a>
+            </div>
+
+            <div style={{ flex: '0 0 auto', minWidth: '100px' }}>
+              <h3 style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ExternalLink size={14} /> Short URL
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <code style={{ fontSize: '1rem', padding: '0.5rem 0.75rem', background: 'var(--bg-body)', border: '1px solid var(--border)' }}>
+                  {link.short_code}
+                </code>
+                <Button size="sm" variant="outline" onClick={copyToClipboard} title="Copy">
+                  <Copy size={14} />
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ flex: '0 0 auto', minWidth: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <MousePointer size={14} /> Total Clicks
+              </h3>
+              <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{link.click_count}</span>
+            </div>
+
+            <div style={{ flex: '0 0 auto', minWidth: '150px' }}>
+              <h3 style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Calendar size={14} /> Created
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontWeight: 500, fontSize: '1rem' }}>
+                  {new Date(link.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {new Date(link.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {link.devices && link.devices.length > 0 && (
+          <div className="card">
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+              <h3 className="card-title" style={{ margin: 0 }}>Devices</h3>
+            </div>
+            <div className="table-container" style={{ borderRadius: 0, border: 'none' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Browser</th>
+                    <th style={{ textAlign: 'center' }}>Visits</th>
+                    <th style={{ textAlign: 'right' }}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {link.devices.map(device => (
+                    <tr key={device.browser}>
+                      <td>{device.browser}</td>
+                      <td style={{ textAlign: 'center' }}>{device.count}</td>
+                      <td style={{ textAlign: 'right' }}>{device.percentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <div className="card">
+          <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <h3 className="card-title" style={{ margin: 0 }}>Recent Visits ({visits.length})</h3>
+          </div>
+
+          <div className="table-container" style={{ borderRadius: 0, border: 'none' }}>
+            {visits.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No visits yet. Share your link to start tracking!
+              </div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                    <th>Visited At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visits.map(visit => (
+                    <tr key={visit.id}>
+                      <td>
+                        <code>{visit.ip_address}</code>
+                      </td>
+                      <td>
+                        <div style={{ maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={visit.user_agent}>
+                          {visit.user_agent}
+                        </div>
+                      </td>
+                      <td>
+                        {new Date(visit.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
-
-      {link.devices && link.devices.length > 0 && (
-        <>
-          <h3>Devices</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Browser</th>
-                <th style={{ padding: '10px', textAlign: 'center' }}>Visits</th>
-                <th style={{ padding: '10px', textAlign: 'right' }}>%</th>
-              </tr>
-            </thead>
-            <tbody>
-              {link.devices.map(device => (
-                <tr key={device.browser} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '10px' }}>{device.browser}</td>
-                  <td style={{ padding: '10px', textAlign: 'center' }}>{device.count}</td>
-                  <td style={{ padding: '10px', textAlign: 'right' }}>{device.percentage}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-
-      <h3>Recent Visits ({visits.length})</h3>
-
-      {visits.length === 0 ? (
-        <p style={{ color: '#999', textAlign: 'center', marginTop: '30px' }}>
-          No visits yet. Share your link to start tracking!
-        </p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '10px', textAlign: 'left' }}>IP Address</th>
-              <th style={{ padding: '10px', textAlign: 'left' }}>User Agent</th>
-              <th style={{ padding: '10px', textAlign: 'left' }}>Visited At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visits.map(visit => (
-              <tr key={visit.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '10px' }}>
-                  <code>{visit.ip_address}</code>
-                </td>
-                <td style={{ padding: '10px', fontSize: '12px', maxWidth: '300px' }}>
-                  {visit.user_agent.substring(0, 80)}
-                  {visit.user_agent.length > 80 && '...'}
-                </td>
-                <td style={{ padding: '10px' }}>
-                  {new Date(visit.created_at).toLocaleString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+    </Layout>
   );
 }

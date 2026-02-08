@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import Layout from '../components/Layout';
+import '../components/ui/Table.css';
 
 export default function Top() {
   const [links, setLinks] = useState([]);
@@ -12,43 +14,57 @@ export default function Top() {
   }, []);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h2 style={{ margin: 0 }}>Top 100 URLs</h2>
-        <Link to={user ? '/dashboard' : '/login'} style={{ color: '#1a1a1a' }}>
-          {user ? 'Dashboard' : 'Login'}
-        </Link>
+    <Layout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.875rem', fontWeight: 700 }}>Top 100 URLs</h2>
+          {!user && (
+            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+              Login to create links
+            </Link>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="table-container" style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px', textAlign: 'center' }}>#</th>
+                  <th style={{ width: '50%' }}>Original URL</th>
+                  <th style={{ width: '30%' }}>Short Code</th>
+                  <th style={{ width: '15%', textAlign: 'center' }}>Clicks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {links.map((link, index) => (
+                  <tr key={link.id}>
+                    <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
+                    <td>
+                      <div style={{ maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--primary)' }}>
+                        <a href={link.original_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+                          {link.original_url}
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <code>{link.short_code}</code>
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 600 }}>{link.click_count}</td>
+                  </tr>
+                ))}
+                {links.length === 0 && (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      No links yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #ddd' }}>
-            <th style={{ padding: '10px', textAlign: 'center', width: '50px' }}>#</th>
-            <th style={{ padding: '10px', textAlign: 'left' }}>URL</th>
-            <th style={{ padding: '10px', textAlign: 'left' }}>Short Code</th>
-            <th style={{ padding: '10px', textAlign: 'center' }}>Clicks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {links.map((link, index) => (
-            <tr key={link.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '10px', textAlign: 'center', color: '#999' }}>{index + 1}</td>
-              <td style={{ padding: '10px' }}>
-                <a href={link.original_url} target="_blank" rel="noopener noreferrer">
-                  {link.original_url.substring(0, 60)}
-                  {link.original_url.length > 60 && '...'}
-                </a>
-              </td>
-              <td style={{ padding: '10px' }}><code>{link.short_code}</code></td>
-              <td style={{ padding: '10px', textAlign: 'center', fontWeight: 600 }}>{link.click_count}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {links.length === 0 && (
-        <p style={{ textAlign: 'center', marginTop: '50px', color: '#999' }}>No links yet.</p>
-      )}
-    </div>
+    </Layout>
   );
 }

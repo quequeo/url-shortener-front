@@ -1,11 +1,26 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
+import Button from '../components/ui/Button';
 
 export default function NotFound() {
+  const navigate = useNavigate();
+
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '72px', margin: '0 0 10px' }}>404</h1>
-      <p style={{ fontSize: '18px', color: '#666', marginBottom: '30px' }}>Page not found</p>
-      <Link to="/" style={{ color: '#1a1a1a' }}>Go to Dashboard</Link>
-    </div>
+    <Layout>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        textAlign: 'center'
+      }}>
+        <h1 style={{ fontSize: '6rem', fontWeight: 900, color: 'var(--primary)', lineHeight: 1, marginBottom: '1rem' }}>404</h1>
+        <p style={{ fontSize: '1.5rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>Page not found</p>
+        <Button onClick={() => navigate('/')} size="lg">
+          Go to Dashboard
+        </Button>
+      </div>
+    </Layout>
   );
 }
