@@ -52,6 +52,9 @@ export default function Login() {
       <p style={{ marginTop: '15px' }}>
         Don't have an account? <Link to="/register">Register</Link>
       </p>
+      <p style={{ marginTop: '10px' }}>
+        <Link to="/top">Top 100 URLs</Link>
+      </p>
     </div>
   );
 }

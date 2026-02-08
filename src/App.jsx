@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import LinkDetail from './pages/LinkDetail';
+import Top from './pages/Top';
+import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -30,7 +33,14 @@ function App() {
               <LinkDetail />
             </PrivateRoute>
           } />
+          <Route path="/top" element={<Top />} />
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          } />
           <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

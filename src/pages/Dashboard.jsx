@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -77,6 +77,8 @@ export default function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h2 style={{ margin: 0 }}>Dashboard</h2>
         <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Link to="/top" style={{ marginRight: '15px', color: '#1a1a1a' }}>Top 100</Link>
+          <Link to="/profile" style={{ marginRight: '15px', color: '#1a1a1a' }}>Profile</Link>
           <span style={{ marginRight: '15px' }}>Welcome, {user?.name}</span>
           <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}>Logout</button>
         </div>
