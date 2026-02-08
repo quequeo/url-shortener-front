@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/users/sign_in', {
       user: { email, password }
     });
-    const userData = response.data.user;
+    const userData = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/users', {
       user: { name, email, password }
     });
-    const userData = response.data.user;
+    const userData = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
